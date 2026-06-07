@@ -29,7 +29,13 @@
 
  */
 
-#include "mem_defs.h"
+/*
+ * Path is relative to this file's directory (linker/u575xxx). The C build finds
+ * mem_defs.h via -Ilib/include, but the linker-script preprocessing pass does
+ * not get the app's include dirs (they're added after Zephyr snapshots the
+ * linker include list), so reference the header by relative path here.
+ */
+#include "../../lib/include/mem_defs.h"
 
 /* Game code and data */
 SECTION_PROLOGUE(game_code, (NOLOAD),)

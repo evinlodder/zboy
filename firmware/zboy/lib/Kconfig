@@ -1,0 +1,14 @@
+# -----------------------------------------------------------------------------
+# Generated with AI assistance by Claude (Anthropic Opus 4.8, model
+# claude-opus-4-8) on 2026-06-07. Reviewed and maintained by the project author.
+# -----------------------------------------------------------------------------
+#
+# zboy game-side support library configuration.
+
+config ZBOY_LIB_LOG_LEVEL
+	int "zboy library log level"
+	default 3
+	range 0 4
+	help
+	  Default log verbosity for the zboy support library
+	  (0=off, 1=err, 2=wrn, 3=inf, 4=dbg).

@@ -1,0 +1,18 @@
+# -----------------------------------------------------------------------------
+# Generated with AI assistance by Claude (Anthropic Opus 4.8, model
+# claude-opus-4-8) on 2026-06-07. Reviewed and maintained by the project author.
+# -----------------------------------------------------------------------------
+#
+# zboy console firmware — application Kconfig root.
+#
+# When an application provides its own Kconfig, it becomes the Kconfig tree root
+# and is responsible for sourcing Zephyr's configuration. Project-specific
+# options are declared here (and in sub-Kconfigs) before that source line.
+
+menu "zboy console options"
+
+rsource "lib/Kconfig"
+
+endmenu
+
+source "Kconfig.zephyr"

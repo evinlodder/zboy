@@ -12,11 +12,22 @@
  * of the frame buffers
  */
 
+/* Zephyr's sys/util.h also defines KB(); guard to avoid a redefinition warning
+ * when this header and Zephyr headers are included together. */
+#ifndef KB
 #define KB(x) ((x) * 1024)
+#endif
 #define ALIGN_DOWN(x, a) ((x) & ~((a) - 1))
 
+/* The STM32U5 CMSIS SoC header also defines SRAM2_SIZE/SRAM3_SIZE (to the same
+ * values); guard to avoid redefinition warnings when included alongside Zephyr
+ * headers. The linker pass does not pull in CMSIS, so these still apply there. */
+#ifndef SRAM3_SIZE
 #define SRAM3_SIZE KB(512)    // SRAM3 memory region on U575xxx chips is 512kb
+#endif
+#ifndef SRAM2_SIZE
 #define SRAM2_SIZE KB(64)     // SRAM2 memory region on U575xxx chips is 64kb
+#endif
 #define GAME_STACK_SIZE KB(8) // constant stack size for game to use
 
 // Screen size constants
@@ -38,6 +49,14 @@
 #define GAME_CODE_SIZE                                                         \
   ALIGN_DOWN(SRAM3_SIZE - GAME_STACK_SIZE - PALETTE_SIZE - FRAMEBUF_TOTAL, 8)
 
+/*
+ * Compile-time budget checks. Skipped when this header is pulled into a linker
+ * script: the linker preprocessor defines _LINKER, and _Static_assert is a C
+ * construct that would otherwise be emitted verbatim into the .ld output. The
+ * checks still run whenever a C source (e.g. src/main.c) includes this header.
+ */
+#ifndef _LINKER
+
 // Assertions to assume nothing breaks
 _Static_assert(
     GAME_CODE_SIZE >= KB(128),
@@ -53,5 +72,7 @@ _Static_assert((GAME_CODE_SIZE % 4) == 0,
                "dimensions and sizes.");
 _Static_assert((GAME_STACK_SIZE % 8) == 0,
                "Game stack region is not 8-byte aligned - check stack size.");
+
+#endif // _LINKER
 
 #endif // MEM_DEFS_H

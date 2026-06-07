@@ -2,3 +2,5 @@ modules
 tools
 bootloader
 zephyr
+zboy/CLAUDE.md
+build
