@@ -1,0 +1,44 @@
+/*
+ * boards/u575xx/mem.overlay
+ *
+ * Memory layout for u575xxx chips
+ *
+ * Physical map (from RM0456 Figure 4 + Table 6):
+ *   SRAM1  0x20000000  192KB  -> Zephyr kernel, stacks, console buffers, API table
+ *   SRAM2  0x20030000   64KB  -> Game heap (API-managed, MPU RW for game code)
+ *   SRAM3  0x20040000  512KB  -> Game code, game stack, framebuffers, palette
+ *   SRAM4  0x28000000   16KB  -> D3 domain, reserved for future low-power use
+ *   BKPSRAM 0x40036400   2KB  -> Crash log, save-dirty flag, sleep/resume state
+ */
+
+/ {
+  chosen {
+    zephyr,sram = &sram0;
+  };
+
+  game_heap_region: memory@20030000 {
+    compatible = "zephyr,memory-region", "mmio-sram";
+    reg = <0x20030000 DT_SIZE_K(64)>;
+    zephyr,memory-region = "GAME_HEAP";
+    zephyr,memory-region-flags = "rw";
+  };
+
+  game_sram_region: memory@20040000 {
+    compatible = "zephyr,memory-region", "mmio-sram";
+    reg = <0x20040000 DT_SIZE_K(512)>;
+    zephyr,memory-region = "GAME_SRAM";
+    zephyr,memory-region-flags = "rwx";
+  };
+};
+
+/* restrict SRAM1 to only 192kb 
+* zephyr defined sram0 as SRAM1+2+3 
+* but zephyr's sram should be restricted to SRAM1
+*/
+&sram0 {
+  reg = <0x20000000 DT_SIZE_K(192)>;
+};
+
+&backup_sram {
+  status = "okay";
+};
