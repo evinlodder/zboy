@@ -18,15 +18,17 @@
 #define KB(x) ((x) * 1024)
 #endif
 #define ALIGN_DOWN(x, a) ((x) & ~((a) - 1))
+#define ALIGN_UP(x, a) (((x) + (a) - 1) & ~((a) - 1))
 
 /* The STM32U5 CMSIS SoC header also defines SRAM2_SIZE/SRAM3_SIZE (to the same
  * values); guard to avoid redefinition warnings when included alongside Zephyr
- * headers. The linker pass does not pull in CMSIS, so these still apply there. */
+ * headers. The linker pass does not pull in CMSIS, so these still apply there.
+ */
 #ifndef SRAM3_SIZE
-#define SRAM3_SIZE KB(512)    // SRAM3 memory region on U575xxx chips is 512kb
+#define SRAM3_SIZE KB(512) // SRAM3 memory region on U575xxx chips is 512kb
 #endif
 #ifndef SRAM2_SIZE
-#define SRAM2_SIZE KB(64)     // SRAM2 memory region on U575xxx chips is 64kb
+#define SRAM2_SIZE KB(64) // SRAM2 memory region on U575xxx chips is 64kb
 #endif
 #define GAME_STACK_SIZE KB(8) // constant stack size for game to use
 
@@ -44,10 +46,15 @@
 #define COLOR_SIZE 2 // RGB565
 #define PALETTE_SIZE (256 * COLOR_SIZE)
 
+// Console API function table size
+#define API_TABLE_SIZE ALIGN_UP(4, 8)
+
 // Game code + data sizing -- ensuring it is 8-byte aligned so the stack doesn't
 // inflate the size
 #define GAME_CODE_SIZE                                                         \
-  ALIGN_DOWN(SRAM3_SIZE - GAME_STACK_SIZE - PALETTE_SIZE - FRAMEBUF_TOTAL, 8)
+  ALIGN_DOWN(SRAM3_SIZE - GAME_STACK_SIZE - PALETTE_SIZE - FRAMEBUF_TOTAL -    \
+                 API_TABLE_SIZE,                                               \
+             8)
 
 /*
  * Compile-time budget checks. Skipped when this header is pulled into a linker
@@ -72,6 +79,13 @@ _Static_assert((GAME_CODE_SIZE % 4) == 0,
                "dimensions and sizes.");
 _Static_assert((GAME_STACK_SIZE % 8) == 0,
                "Game stack region is not 8-byte aligned - check stack size.");
+
+// Ensure API_TABLE_SIZE matches the size of the struct
+// API_TABLE_SIZE would normally be sizeof() but that isn't available at ld time
+#include "console.h"
+_Static_assert(API_TABLE_SIZE == ALIGN_UP(sizeof(ConsoleApi), 8),
+               "API_TABLE_SIZE doesn't match the size of ConsoleApi! Make sure "
+               "to update the macro in mem_defs.h");
 
 #endif // _LINKER
 

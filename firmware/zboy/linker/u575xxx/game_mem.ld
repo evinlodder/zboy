@@ -7,6 +7,8 @@
  *
  * GAME_SRAM memory regions:
  *   0x20040000  ┌──────────────────────────────┐
+ *               │  console API table           │
+ *               ├──────────────────────────────┤
  *               │  game code + data            │
  *               ├──────────────────────────────┤
  *               │  game stack                  │    8 KB  (0x02000)
@@ -17,6 +19,7 @@
  *               ├──────────────────────────────┤
  *               │  palette  (256 × RGB565)     │  512 B (using rgb565)
  *               └──────────────────────────────┘
+ *
  *               (top of SRAM3: 0x200BFFFF)
  *
  * The size of the framebuffers depends on the screen size defined in lib/include/mem_defs.h
@@ -37,10 +40,19 @@
  */
 #include "../../lib/include/mem_defs.h"
 
+/* Console API table -- start of SRAM3 */
+SECTION_PROLOGUE(console_api_table, (NOLOAD),)
+{
+  . = ALIGN(8);
+  __console_api_start = .;
+  . += API_TABLE_SIZE;
+  __console_api_end = .;
+} GROUP_LINK_IN(GAME_SRAM)
+
 /* Game code and data */
 SECTION_PROLOGUE(game_code, (NOLOAD),)
 {
-  . = ALIGN(4);
+  . = ALIGN(8);
   __game_code_start = .;
   . += GAME_CODE_SIZE;
   __game_code_end = .;
@@ -81,6 +93,7 @@ SECTION_PROLOGUE(palette, (NOLOAD),)
   . += PALETTE_SIZE;
   __palette_end = .;
 } GROUP_LINK_IN(GAME_SRAM)
+
 
 /* Game heap on SRAM2 */ 
 SECTION_PROLOGUE(game_heap, (NOLOAD),)
